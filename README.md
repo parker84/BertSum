@@ -21,6 +21,63 @@ Results on CNN/Dailymail (25/3/2019):
 
 Some codes are borrowed from ONMT(https://github.com/OpenNMT/OpenNMT-py)
 
+## Data Preparation For Reddit Data
+
+### Step 1. Get Jsons
+
+##### Option 1: Download TLDRs
+- https://zenodo.org/record/1043504#.XRu1QpNKhTZ
+
+##### Option 2: Get TLDRS from reddit
+- see README: https://github.com/VectorInstitute/NLP_Project/tree/xlnet/data
+
+
+###  Step 2. Download Stanford CoreNLP
+We will need Stanford CoreNLP to tokenize the data. Download it [here](https://stanfordnlp.github.io/CoreNLP/) and unzip it. Then add the following command to your bash_profile:
+```bash
+export CLASSPATH=/path/to/stanford-corenlp-full-2017-06-09/stanford-corenlp-3.8.0.jar
+# ex:
+export CLASSPATH=/h/bparker/venv_xlnet/stanford-corenlp-full-2018-10-05/stanford-corenlp-3.9.2.jar
+```
+replacing `/path/to/` with the path to where you saved the `stanford-corenlp-full-2017-06-09` directory. 
+
+### Steps 3-5: Option 1: Run bash script based on selection from step 1:
+
+```bash
+cd ./vector-nlp-ds/src
+bash ./models/bert_sum/src/prep_tldrs_from_download_for_bert_sum.sh
+# or:
+bash ./models/bert_sum/src/prep_tldrs_from_api_for_bert_sum.sh
+```
+
+### Steps 3-5: Option 2: Run steps from command line for custom paths:
+
+####  Step 3. Sentence Splitting and Tokenization
+
+```bash
+python preprocess.py -mode tokenize -raw_path RAW_PATH -save_path TOKENIZED_PATH
+```
+
+* `RAW_PATH` is the directory containing story files (`../raw_stories`), `JSON_PATH` is the target directory to save the generated json files (`../merged_stories_tokenized`)
+
+
+####  Step 4. Format to Simpler Json Files
+ 
+```bash
+python preprocess.py -mode format_to_lines -raw_path RAW_PATH -save_path JSON_PATH -map_path MAP_PATH -lower -json_type reddit
+```
+
+* `RAW_PATH` is the directory containing tokenized files (`../merged_stories_tokenized`), `JSON_PATH` is the target directory to save the generated json files (`../json_data/cnndm`), `MAP_PATH` is the  directory containing the urls files (`../urls`)
+
+####  Step 5. Format to PyTorch Files
+```
+python preprocess.py -mode format_to_bert -raw_path JSON_PATH -save_path BERT_DATA_PATH -oracle_mode greedy -n_cpus 4 -log_file ../logs/preprocess.log
+```
+
+* `JSON_PATH` is the directory containing json files (`../json_data`), `BERT_DATA_PATH` is the target directory to save the generated binary files (`../bert_data`)
+
+* `-oracle_mode` can be `greedy` or `combination`, where `combination` is more accurate but takes much longer time to process 
+
 ## Data Preparation For CNN/Dailymail
 ### Option 1: download the processed data
 

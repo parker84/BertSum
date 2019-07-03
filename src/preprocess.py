@@ -57,6 +57,8 @@ if __name__ == '__main__':
 
     parser.add_argument('-n_cpus', default=2, type=int)
 
+    parser.add_argument('-json_type', default='news', type=str, help='news or reddit')
+
 
     args = parser.parse_args()
     init_logger(args.log_file)

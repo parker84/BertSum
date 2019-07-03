@@ -17,8 +17,59 @@ from others.logging import logger
 from others.utils import clean
 from prepro.utils import _get_word_ngrams
 
+# TODO: pulll this splitter out into another file
+# import ipdb; ipdb.set_trace()
+# from models.bert_sum.src.prepro.split_raw_files_into_train_test_val import SplitRawFiles
 
-def load_json(p, lower):
+from sklearn.model_selection import train_test_split
+import os
+SEED = 123
+
+
+class SplitRawFiles():
+
+    def __init__(self, raw_data_dir, save_dir):
+        self.raw_data_dir = raw_data_dir
+        self.save_dir = save_dir
+        self.datasets = {}
+
+    def get_and_split_filenames(self):
+        fnames = os.listdir(self.raw_data_dir)
+        train, test = train_test_split(fnames, test_size=.4, random_state=SEED)
+        val, test = train_test_split(test, test_size=.5, random_state=SEED)
+        self.datasets["train"] = train
+        self.datasets["valid"] = val
+        self.datasets["test"] = test
+
+    def save_fnames_to_corresponding_files(self):
+        for dataset in self.datasets:
+            fp = os.path.join(self.save_dir, "mapping_" + dataset + ".txt")
+            with open(fp, "w") as f:
+                for fname in self.datasets[dataset]:
+                    f.write(fname + '\n')
+
+def load_json_news_data(p, lower):
+    source = []
+    tgt = []
+    flag = False
+    for sent in json.load(open(p))['sentences']:
+        tokens = [t['word'] for t in sent['tokens']]
+        if (lower):
+            tokens = [t.lower() for t in tokens]
+        if (tokens[0] == '@highlight'):
+            flag = True
+            continue
+        if (flag):
+            tgt.append(tokens)
+            flag = False
+        else:
+            source.append(tokens)
+
+    source = [clean(' '.join(sent)).split() for sent in source]
+    tgt = [clean(' '.join(sent)).split() for sent in tgt]
+    return source, tgt
+
+def load_json_reddit_data(p, lower):
     source = []
     tgt = []
     flag = False
@@ -219,15 +270,14 @@ def format_to_bert(args):
 def tokenize(args):
     stories_dir = os.path.abspath(args.raw_path)
     tokenized_stories_dir = os.path.abspath(args.save_path)
-
     print("Preparing to tokenize %s to %s..." % (stories_dir, tokenized_stories_dir))
     stories = os.listdir(stories_dir)
     # make IO list file
     print("Making list of files to tokenize...")
     with open("mapping_for_corenlp.txt", "w") as f:
         for s in stories:
-            if (not s.endswith('story')):
-                continue
+            # if (not s.endswith('story')):
+            #     continue
             f.write("%s\n" % (os.path.join(stories_dir, s)))
     command = ['java', 'edu.stanford.nlp.pipeline.StanfordCoreNLP' ,'-annotators', 'tokenize,ssplit', '-ssplit.newlineIsSentenceBreak', 'always', '-filelist', 'mapping_for_corenlp.txt', '-outputFormat', 'json', '-outputDirectory', tokenized_stories_dir]
     print("Tokenizing %i files in %s and saving in %s..." % (len(stories), stories_dir, tokenized_stories_dir))
@@ -276,23 +326,33 @@ def _format_to_bert(params):
 
 
 def format_to_lines(args):
+    data_splitter = SplitRawFiles(args.raw_path, args.map_path)
+    data_splitter.get_and_split_filenames()
+    data_splitter.save_fnames_to_corresponding_files()
     corpus_mapping = {}
     for corpus_type in ['valid', 'test', 'train']:
         temp = []
         for line in open(pjoin(args.map_path, 'mapping_' + corpus_type + '.txt')):
-            temp.append(hashhex(line.strip()))
+            # temp.append(hashhex(line.strip()))
+            temp.append(line)
         corpus_mapping[corpus_type] = {key.strip(): 1 for key in temp}
     train_files, valid_files, test_files = [], [], []
+    i=0
     for f in glob.glob(pjoin(args.raw_path, '*.json')):
-        real_name = f.split('/')[-1].split('.')[0]
+        # real_name = f.split('/')[-1].split('.')[0]
+        # real_name = hashhex(f.split('/')[-1].split('.')[0])
+        real_name = f.split('/')[-1]
         if (real_name in corpus_mapping['valid']):
             valid_files.append(f)
         elif (real_name in corpus_mapping['test']):
             test_files.append(f)
         elif (real_name in corpus_mapping['train']):
             train_files.append(f)
-
+        i+=1
+        # if i > 100:
+        #     break
     corpora = {'train': train_files, 'valid': valid_files, 'test': test_files}
+    # import ipdb; ipdb.set_trace()
     for corpus_type in ['train', 'valid', 'test']:
         a_lst = [(f, args) for f in corpora[corpus_type]]
         pool = Pool(args.n_cpus)
@@ -301,7 +361,8 @@ def format_to_lines(args):
         for d in pool.imap_unordered(_format_to_lines, a_lst):
             dataset.append(d)
             if (len(dataset) > args.shard_size):
-                pt_file = "{:s}.{:s}.{:d}.json".format(args.save_path, corpus_type, p_ct)
+                pt_file = "{:s}/{:s}.{:d}.json".format(args.save_path, corpus_type, p_ct)
+                # import ipdb; ipdb.set_trace()
                 with open(pt_file, 'w') as save:
                     # save.write('\n'.join(dataset))
                     save.write(json.dumps(dataset))
@@ -311,7 +372,7 @@ def format_to_lines(args):
         pool.close()
         pool.join()
         if (len(dataset) > 0):
-            pt_file = "{:s}.{:s}.{:d}.json".format(args.save_path, corpus_type, p_ct)
+            pt_file = "{:s}/{:s}.{:d}.json".format(args.save_path, corpus_type, p_ct)
             with open(pt_file, 'w') as save:
                 # save.write('\n'.join(dataset))
                 save.write(json.dumps(dataset))
@@ -322,5 +383,8 @@ def format_to_lines(args):
 def _format_to_lines(params):
     f, args = params
     print(f)
-    source, tgt = load_json(f, args.lower)
+    if args.json_type == "news":
+        source, tgt = load_json_news_data(f, args.lower)
+    elif args.json_type == "reddit":
+        source, tgt = load_json_reddit_data(f, args.lower)
     return {'src': source, 'tgt': tgt}
