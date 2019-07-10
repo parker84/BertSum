@@ -253,6 +253,8 @@ def format_to_bert(args):
         datasets = [args.dataset]
     else:
         datasets = ['train', 'valid', 'test']
+    if not os.path.isdir(args.save_path):
+        os.makedirs(args.save_path)
     for corpus_type in datasets:
         a_lst = []
         for json_f in glob.glob(pjoin(args.raw_path, '*' + corpus_type + '.*.json')):
@@ -287,6 +289,8 @@ def tokenize(args):
 
     # Check that the tokenized stories directory contains the same number of files as the original directory
     num_orig = len(os.listdir(stories_dir))
+    if not os.path.isdir(tokenized_stories_dir):
+        os.makedirs(tokenized_stories_dir)
     num_tokenized = len(os.listdir(tokenized_stories_dir))
     if num_orig != num_tokenized:
         raise Exception(
@@ -326,6 +330,10 @@ def _format_to_bert(params):
 
 
 def format_to_lines(args):
+    if not os.path.isdir(args.map_path):
+        os.makedirs(args.map_path)
+    if not os.path.isdir(args.save_path):
+        os.makedirs(args.save_path)
     data_splitter = SplitRawFiles(args.raw_path, args.map_path)
     data_splitter.get_and_split_filenames()
     data_splitter.save_fnames_to_corresponding_files()

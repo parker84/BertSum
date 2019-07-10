@@ -6,6 +6,7 @@ import time
 
 from others.logging import init_logger
 from prepro import data_builder
+import os
 
 
 def do_format_to_lines(args):
@@ -58,8 +59,12 @@ if __name__ == '__main__':
     parser.add_argument('-n_cpus', default=2, type=int)
 
     parser.add_argument('-json_type', default='news', type=str, help='news or reddit')
-
-
+    
     args = parser.parse_args()
+
+    log_dir = "/".join(args.log_file.split("/")[:-1])
+    if not os.path.isdir(log_dir):
+        os.makedirs(log_dir)
+
     init_logger(args.log_file)
     eval('data_builder.'+args.mode + '(args)')

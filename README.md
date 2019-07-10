@@ -127,6 +127,33 @@ python preprocess.py -mode format_to_bert -raw_path JSON_PATH -save_path BERT_DA
 
 **First run**: For the first time, you should use single-GPU, so the code can download the BERT model. Change ``-visible_gpus 0,1,2  -gpu_ranks 0,1,2 -world_size 3`` to ``-visible_gpus 0  -gpu_ranks 0 -world_size 1``, after downloading, you could kill the process and rerun the code with multi-GPUs.
 
+#### param info
+```bash
+python train.py \
+    -mode train \
+    -encoder transformer \
+    -dropout 0.1 \
+    -bert_data_path ../bert_data/cnndm \
+    -model_path ../models/bert_transformer \
+    -lr 2e-3 \
+    -visible_gpus 0,1,2  \ # allocation onto specific gpus?
+    -gpu_ranks 0,1,2 \ # order?
+    -world_size 3 \ # num gpus
+    -report_every 50 \
+    -save_checkpoint_steps 1000 \
+    -batch_size 3000 \
+    -decay_method noam \
+    -train_steps 50000 \
+    -accum_count 2 \
+    -log_file ../logs/bert_transformer \
+    -use_interval true \
+    -warmup_steps 10000 \
+    -ff_size 2048 \
+    -inter_layers 2 \
+    -heads 8
+```
+
+#### training with different models
 
 To train the BERT+Classifier model, run:
 ```
