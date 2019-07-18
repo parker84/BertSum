@@ -48,28 +48,7 @@ class SplitRawFiles():
                 for fname in self.datasets[dataset]:
                     f.write(fname + '\n')
 
-def load_json_news_data(p, lower):
-    source = []
-    tgt = []
-    flag = False
-    for sent in json.load(open(p))['sentences']:
-        tokens = [t['word'] for t in sent['tokens']]
-        if (lower):
-            tokens = [t.lower() for t in tokens]
-        if (tokens[0] == '@highlight'):
-            flag = True
-            continue
-        if (flag):
-            tgt.append(tokens)
-            flag = False
-        else:
-            source.append(tokens)
-
-    source = [clean(' '.join(sent)).split() for sent in source]
-    tgt = [clean(' '.join(sent)).split() for sent in tgt]
-    return source, tgt
-
-def load_json_reddit_data(p, lower):
+def load_json_data(p, lower):
     source = []
     tgt = []
     flag = False
@@ -277,6 +256,7 @@ def tokenize(args):
     # make IO list file
     print("Making list of files to tokenize...")
     with open("mapping_for_corenlp.txt", "w") as f:
+        import ipdb; ipdb.set_trace()
         for s in stories:
             # if (not s.endswith('story')):
             #     continue
@@ -391,8 +371,5 @@ def format_to_lines(args):
 def _format_to_lines(params):
     f, args = params
     print(f)
-    if args.json_type == "news":
-        source, tgt = load_json_news_data(f, args.lower)
-    elif args.json_type == "reddit":
-        source, tgt = load_json_reddit_data(f, args.lower)
+    source, tgt = load_json_data(f, args.lower)
     return {'src': source, 'tgt': tgt}
