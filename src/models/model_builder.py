@@ -1,4 +1,4 @@
-
+from model_settings import comet_experiment
 import torch
 import torch.nn as nn
 from pytorch_pretrained_bert import BertModel, BertConfig
@@ -85,6 +85,9 @@ class Summarizer(nn.Module):
                     xavier_uniform_(p)
 
         self.to(device)
+        print(self.bert.model.config)
+        comet_experiment.log_parameters(self.bert.model.config.to_dict())
+
     def load_cp(self, pt):
         self.load_state_dict(pt['model'], strict=True)
 

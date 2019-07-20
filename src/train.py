@@ -1,9 +1,8 @@
-#!/usr/bin/env python
 """
     Main training workflow
 """
 from __future__ import division
-
+from model_settings import comet_experiment
 import argparse
 import glob
 import os
@@ -186,8 +185,10 @@ def validate(args,  device_id, pt, step):
                                   args.batch_size, device,
                                   shuffle=False, is_test=False)
     trainer = build_trainer(args, device_id, model, None)
-    stats = trainer.validate(valid_iter, step)
-    return stats.xent()
+    # comet_experiment.log_parameters(config)
+    with comet_experiment.test():
+        stats = trainer.validate(valid_iter, step)
+        return stats.xent()
 
 def test(args, device_id, pt, step):
 
@@ -231,6 +232,8 @@ def baseline(args, cal_lead=False, cal_oracle=False):
 
 
 def train(args, device_id):
+    # import ipdb; ipdb.set_trace()
+    # import pdb; pdb.set_trace()
     init_logger(args.log_file)
 
     device = "cpu" if args.visible_gpus == '-1' else "cuda"
@@ -241,7 +244,9 @@ def train(args, device_id):
     torch.backends.cudnn.deterministic = True
 
     if device_id >= 0:
+        print("device_id = " + str(device_id))
         torch.cuda.set_device(device_id)
+        print("device set")
         torch.cuda.manual_seed(args.seed)
 
 
@@ -269,7 +274,8 @@ def train(args, device_id):
 
     logger.info(model)
     trainer = build_trainer(args, device_id, model, optim)
-    trainer.train(train_iter_fct, args.train_steps)
+    with comet_experiment.train():
+        trainer.train(train_iter_fct, args.train_steps)
 
 
 

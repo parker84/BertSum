@@ -5,7 +5,7 @@ import sys
 import time
 
 from others.logging import logger
-
+from model_settings import comet_experiment
 
 class Statistics(object):
     """
@@ -103,11 +103,13 @@ class Statistics(object):
         step_fmt = "%2d" % step
         if num_steps > 0:
             step_fmt = "%s/%5d" % (step_fmt, num_steps)
+        loss = self.xent()
+        comet_experiment.log_metric("loss", loss, step=step)
         logger.info(
             ("Step %s; xent: %4.2f; " +
              "lr: %7.7f; %3.0f docs/s; %6.0f sec")
             % (step_fmt,
-               self.xent(),
+               loss,
                learning_rate,
                self.n_docs / (t + 1e-5),
                time.time() - start))
