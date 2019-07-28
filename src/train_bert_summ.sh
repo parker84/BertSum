@@ -1,5 +1,20 @@
 #!/bin/bash
 
+# export PYTHONPATH="/h/bparker/vector-nlp-ds/src/:$PYTHONPATH"
+# export PYTHONHOME="/h/bparker/venv_xlnet/bin/python3:$PYTHONHOME"
+export PYTHONHOME="/h/bparker/venv_xlnet/bin/python3"
+
+# module load python
+
+#SBATCH -N 1      # nodes requested
+#SBATCH -n 1      # tasks requested
+#SBATCH -c 4      # cores requested
+#SBATCH --mem=10  # memory in Mb
+#SBATCH -o outfile  # send stdout to outfile
+#SBATCH -e errfile  # send stderr to errfile
+#SBATCH -t 0:01:00  # time requested in hour:minute:second
+
+
 python ./models/bert_sum/src/train.py \
     -mode train \
     -encoder transformer \
