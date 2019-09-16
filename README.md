@@ -182,3 +182,12 @@ python train.py -mode validate -bert_data_path ../bert_data/cnndm -model_path MO
 * `RESULT_PATH` is where you want to put decoded summaries (default `../results/cnndm`)
 
 
+## FAQ:
+
+#### How to validate model?
+- mode=validate
+- 
+
+#### Training From Last Checkpoint
+- train_from="checkpoint"
+- otherwise will rebuild 

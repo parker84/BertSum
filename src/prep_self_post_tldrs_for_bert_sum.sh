@@ -1,42 +1,20 @@
 
-# python ./models/bert_sum/src/preprocess.py \
-#     -mode tokenize \
-#     -raw_path '/scratch/gobi2/bparker/summarization_data/interim/reddit/tldr/corpus-webis-tldr-17/one_json_per_line' \
-#     -save_path '/scratch/gobi2/bparker/summarization_data/interim/reddit/tldr/corpus-webis-tldr-17/corpus-webis-tldr-17-tokenized' \
-#     -log_file '/scratch/gobi2/bparker/summarization_data/interim/reddit/tldr/corpus-webis-tldr-17/logs/bert_summ_tokenize_step_logs.log'
-# python ./models/bert_sum/src/preprocess.py \
-#     -mode format_to_lines \
-#     -raw_path '/scratch/gobi2/bparker/summarization_data/interim/reddit/tldr/corpus-webis-tldr-17/corpus-webis-tldr-17-tokenized' \
-#     -save_path '/scratch/gobi2/bparker/summarization_data/interim/reddit/tldr/corpus-webis-tldr-17/corpus-webis-tldr-17-jsoned' \
-#     -map_path '/scratch/gobi2/bparker/summarization_data/interim/reddit/tldr/corpus-webis-tldr-17/urls' \
-#     -lower true \
-#     -json_type reddit \
-#     -log_file '/scratch/gobi2/bparker/summarization_data/interim/reddit/tldr/corpus-webis-tldr-17/logs/bert_summ_format_to_lines_step_logs.log'
-# python ./models/bert_sum/src/preprocess.py \
-#     -mode format_to_bert \
-#     -raw_path  '/scratch/gobi2/bparker/summarization_data/interim/reddit/tldr/corpus-webis-tldr-17/corpus-webis-tldr-17-jsoned' \
-#     -save_path '/scratch/gobi2/bparker/summarization_data/interim/reddit/tldr/corpus-webis-tldr-17/corpus-webis-tldr-17-bert-ready' \
-#     -oracle_mode greedy \
-#     -n_cpus 4 \
-#     -log_file '/scratch/gobi2/bparker/summarization_data/interim/reddit/tldr/corpus-webis-tldr-17/logs/bert_summ_format_to_bert_step_logs.log'
-
 python ./models/bert_sum/src/preprocess.py \
     -mode tokenize \
-    -raw_path '/scratch/gobi2/bparker/summarization_data/interim/reddit/tldr/corpus-webis-tldr-17/one_json_per_line' \
-    -save_path '/scratch/gobi2/bparker/summarization_data/processed/reddit/tldr/corpus-webis-tldr-17/corpus-webis-tldr-17-tokenized' \
-    -log_file '/scratch/gobi2/bparker/summarization_data/processed/reddit/tldr/corpus-webis-tldr-17/logs/bert_summ_tokenize_step_logs.log'
+    -raw_path '/scratch/gobi2/bparker/summarization_data/interim/reddit/tldr/filtered_txt_for_bert_summ_from_reddit_self_posts/' \
+    -save_path '/scratch/gobi2/bparker/summarization_data/processed/reddit/tldr/filtered_txt_for_bert_summ_from_reddit_self_posts/filtered_txt_for_bert_summ_from_reddit_self_posts-tokenized' \
+    -log_file '/scratch/gobi2/bparker/summarization_data/processed/reddit/tldr/filtered_txt_for_bert_summ_from_reddit_self_posts/logs/bert_summ_tokenize_step_logs.log'
 python ./models/bert_sum/src/preprocess.py \
     -mode format_to_lines \
-    -raw_path '/scratch/gobi2/bparker/summarization_data/processed/reddit/tldr/corpus-webis-tldr-17/corpus-webis-tldr-17-tokenized' \
-    -save_path '/scratch/gobi2/bparker/summarization_data/processed/reddit/tldr/corpus-webis-tldr-17/corpus-webis-tldr-17-jsoned' \
-    -map_path '/scratch/gobi2/bparker/summarization_data/processed/reddit/tldr/corpus-webis-tldr-17/urls' \
+    -raw_path '/scratch/gobi2/bparker/summarization_data/processed/reddit/tldr/filtered_txt_for_bert_summ_from_reddit_self_posts/filtered_txt_for_bert_summ_from_reddit_self_posts-tokenized' \
+    -save_path '/scratch/gobi2/bparker/summarization_data/processed/reddit/tldr/filtered_txt_for_bert_summ_from_reddit_self_posts/filtered_txt_for_bert_summ_from_reddit_self_posts-jsoned' \
+    -map_path '/scratch/gobi2/bparker/summarization_data/processed/reddit/tldr/filtered_txt_for_bert_summ_from_reddit_self_posts/urls' \
     -lower true \
-    -json_type reddit \
-    -log_file '/scratch/gobi2/bparker/summarization_data/processed/reddit/tldr/corpus-webis-tldr-17/logs/bert_summ_format_to_lines_step_logs.log'
+    -log_file '/scratch/gobi2/bparker/summarization_data/processed/reddit/tldr/filtered_txt_for_bert_summ_from_reddit_self_posts/logs/bert_summ_format_to_lines_step_logs.log'
 python ./models/bert_sum/src/preprocess.py \
     -mode format_to_bert \
-    -raw_path  '/scratch/gobi2/bparker/summarization_data/processed/reddit/tldr/corpus-webis-tldr-17/corpus-webis-tldr-17-jsoned' \
-    -save_path '/scratch/gobi2/bparker/summarization_data/processed/reddit/tldr/corpus-webis-tldr-17/corpus-webis-tldr-17-bert-ready' \
+    -raw_path  '/scratch/gobi2/bparker/summarization_data/processed/reddit/tldr/filtered_txt_for_bert_summ_from_reddit_self_posts/filtered_txt_for_bert_summ_from_reddit_self_posts-jsoned' \
+    -save_path '/scratch/gobi2/bparker/summarization_data/processed/reddit/tldr/filtered_txt_for_bert_summ_from_reddit_self_posts/filtered_txt_for_bert_summ_from_reddit_self_posts-bert-ready' \
     -oracle_mode greedy \
     -n_cpus 4 \
-    -log_file '/scratch/gobi2/bparker/summarization_data/processed/reddit/tldr/corpus-webis-tldr-17/logs/bert_summ_format_to_bert_step_logs.log'
+    -log_file '/scratch/gobi2/bparker/summarization_data/processed/reddit/tldr/filtered_txt_for_bert_summ_from_reddit_self_posts/logs/bert_summ_format_to_bert_step_logs.log'

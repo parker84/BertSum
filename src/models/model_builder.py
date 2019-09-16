@@ -86,7 +86,10 @@ class Summarizer(nn.Module):
 
         self.to(device)
         print(self.bert.model.config)
-        comet_experiment.log_parameters(self.bert.model.config.to_dict())
+        config_dict = self.bert.model.config.to_dict()
+        config_dict["bert_data_path"] = args.bert_data_path
+        config_dict["model_path"] = args.model_path
+        comet_experiment.log_parameters(config_dict)
 
     def load_cp(self, pt):
         self.load_state_dict(pt['model'], strict=True)

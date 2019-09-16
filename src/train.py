@@ -1,15 +1,27 @@
 """
     Main training workflow
 """
-from __future__ import division
+
+# print("printing environmental variables")
+# print(os.system("env"))
+# with open("./env.txt", "w") as f:
+#     f.write(os.system("env"))
+
+# from __future__ import division
+import os
+from others.logging import logger, init_logger
+init_logger("./test")
+logger.info("printing environmental variables")
+logger.info(os.system("env"))
+with open("./env.txt", "w") as f:
+    f.write(str(os.system("env")))
 from model_settings import comet_experiment
 import argparse
 import glob
-import os
 import random
 import signal
 import time
-
+import os
 import torch
 from pytorch_pretrained_bert import BertConfig
 
@@ -18,7 +30,7 @@ from models import data_loader, model_builder
 from models.data_loader import load_dataset
 from models.model_builder import Summarizer
 from models.trainer import build_trainer
-from others.logging import logger, init_logger
+
 
 model_flags = ['hidden_size', 'ff_size', 'heads', 'inter_layers','encoder','ff_actv', 'use_interval','rnn_size']
 
@@ -280,6 +292,7 @@ def train(args, device_id):
 
 
 if __name__ == '__main__':
+    
     parser = argparse.ArgumentParser()
 
 
