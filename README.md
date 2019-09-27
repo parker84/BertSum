@@ -174,6 +174,19 @@ python train.py -mode train -encoder rnn -dropout 0.1 -bert_data_path ../bert_da
 * `-mode` can be {`train, validate, test`}, where `validate` will inspect the model directory and evaluate the model for each newly saved checkpoint, `test` need to be used with `-test_from`, indicating the checkpoint you want to use
 
 ## Model Evaluation
+
+1st install pyrrouge: https://stackoverflow.com/a/45894212/installing-pyrouge-gets-error-in-ubuntu:
+```sh
+cd /h/bparker/venv_xlnet/
+git clone https://github.com/bheinzerling/pyrouge
+cd pyrouge
+# ../bin/python3.5 ./setup.py install
+pip install -e .
+cd ../
+git clone https://github.com/andersjo/pyrouge.git rouge
+pyrouge_set_rouge_path /h/bparker/venv_xlnet/rouge/tools/ROUGE-1.5.5/
+```
+
 After the training finished, run
 ```
 python train.py -mode validate -bert_data_path ../bert_data/cnndm -model_path MODEL_PATH  -visible_gpus 0  -gpu_ranks 0 -batch_size 30000  -log_file LOG_FILE  -result_path RESULT_PATH -test_all -block_trigram true
