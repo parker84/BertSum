@@ -86,6 +86,7 @@ class Summarizer(nn.Module):
 
         self.to(device)
         print(self.bert.model.config)
+        self.bert.model.config.to_json_file(args.bert_config_path)
         config_dict = self.bert.model.config.to_dict()
         config_dict["bert_data_path"] = args.bert_data_path
         config_dict["model_path"] = args.model_path
