@@ -21,6 +21,80 @@ Results on CNN/Dailymail (25/3/2019):
 
 Some codes are borrowed from ONMT(https://github.com/OpenNMT/OpenNMT-py)
 
+## Model Training
+
+**First run**: For the first time, you should use single-GPU, so the code can download the BERT model. Change ``-visible_gpus 0,1,2  -gpu_ranks 0,1,2 -world_size 3`` to ``-visible_gpus 0  -gpu_ranks 0 -world_size 1``, after downloading, you could kill the process and rerun the code with multi-GPUs.
+
+examples of different training tasks on different datasets: ./src/train_bert_sum.sh 
+
+#### param info
+```bash
+python train.py \
+    -mode train \
+    -encoder transformer \
+    -dropout 0.1 \
+    -bert_data_path ../bert_data/cnndm \
+    -model_path ../models/bert_transformer \
+    -lr 2e-3 \
+    -visible_gpus 0,1,2  \ # allocation onto specific gpus?
+    -gpu_ranks 0,1,2 \ # order?
+    -world_size 3 \ # num gpus
+    -report_every 50 \
+    -save_checkpoint_steps 1000 \
+    -batch_size 3000 \
+    -decay_method noam \
+    -train_steps 50000 \
+    -accum_count 2 \
+    -log_file ../logs/bert_transformer \
+    -use_interval true \
+    -warmup_steps 10000 \
+    -ff_size 2048 \
+    -inter_layers 2 \
+    -heads 8
+```
+
+#### training with different models
+
+To train the BERT+Classifier model, run:
+```
+python train.py -mode train -encoder classifier -dropout 0.1 -bert_data_path ../bert_data/cnndm -model_path ../models/bert_classifier -lr 2e-3 -visible_gpus 0,1,2  -gpu_ranks 0,1,2 -world_size 3 -report_every 50 -save_checkpoint_steps 1000 -batch_size 3000 -decay_method noam -train_steps 50000 -accum_count 2 -log_file ../logs/bert_classifier -use_interval true -warmup_steps 10000
+```
+
+To train the BERT+Transformer model, run:
+```
+python train.py -mode train -encoder transformer -dropout 0.1 -bert_data_path ../bert_data/cnndm -model_path ../models/bert_transformer -lr 2e-3 -visible_gpus 0,1,2  -gpu_ranks 0,1,2 -world_size 3 -report_every 50 -save_checkpoint_steps 1000 -batch_size 3000 -decay_method noam -train_steps 50000 -accum_count 2 -log_file ../logs/bert_transformer -use_interval true -warmup_steps 10000 -ff_size 2048 -inter_layers 2 -heads 8
+```
+
+To train the BERT+RNN model, run:
+```
+python train.py -mode train -encoder rnn -dropout 0.1 -bert_data_path ../bert_data/cnndm -model_path ../models/bert_rnn -lr 2e-3 -visible_gpus 0,1,2  -gpu_ranks 0,1,2 -world_size 3 -report_every 50 -save_checkpoint_steps 1000 -batch_size 3000 -decay_method noam -train_steps 50000 -accum_count 2 -log_file ../logs/bert_rnn -use_interval true -warmup_steps 10000 -rnn_size 768 -dropout 0.1
+```
+
+
+* `-mode` can be {`train, validate, test`}, where `validate` will inspect the model directory and evaluate the model for each newly saved checkpoint, `test` need to be used with `-test_from`, indicating the checkpoint you want to use
+
+## Model Evaluation (IPR)
+
+1st install pyrrouge: https://stackoverflow.com/a/45894212/installing-pyrouge-gets-error-in-ubuntu:
+```sh
+cd /h/bparker/venv_xlnet/
+git clone https://github.com/bheinzerling/pyrouge
+cd pyrouge
+# ../bin/python3.5 ./setup.py install
+pip install -e .
+cd ../
+git clone https://github.com/andersjo/pyrouge.git rouge
+pyrouge_set_rouge_path /h/bparker/venv_xlnet/rouge/tools/ROUGE-1.5.5/
+```
+
+After the training finished, run
+```
+python train.py -mode validate -bert_data_path ../bert_data/cnndm -model_path MODEL_PATH  -visible_gpus 0  -gpu_ranks 0 -batch_size 30000  -log_file LOG_FILE  -result_path RESULT_PATH -test_all -block_trigram true
+```
+* `MODEL_PATH` is the directory of saved checkpoints
+* `RESULT_PATH` is where you want to put decoded summaries (default `../results/cnndm`)
+
+
 ## Data Preparation For Reddit Data
 
 ### Step 1. Get Jsons
@@ -122,77 +196,6 @@ python preprocess.py -mode format_to_bert -raw_path JSON_PATH -save_path BERT_DA
 * `JSON_PATH` is the directory containing json files (`../json_data`), `BERT_DATA_PATH` is the target directory to save the generated binary files (`../bert_data`)
 
 * `-oracle_mode` can be `greedy` or `combination`, where `combination` is more accurate but takes much longer time to process 
-
-## Model Training
-
-**First run**: For the first time, you should use single-GPU, so the code can download the BERT model. Change ``-visible_gpus 0,1,2  -gpu_ranks 0,1,2 -world_size 3`` to ``-visible_gpus 0  -gpu_ranks 0 -world_size 1``, after downloading, you could kill the process and rerun the code with multi-GPUs.
-
-#### param info
-```bash
-python train.py \
-    -mode train \
-    -encoder transformer \
-    -dropout 0.1 \
-    -bert_data_path ../bert_data/cnndm \
-    -model_path ../models/bert_transformer \
-    -lr 2e-3 \
-    -visible_gpus 0,1,2  \ # allocation onto specific gpus?
-    -gpu_ranks 0,1,2 \ # order?
-    -world_size 3 \ # num gpus
-    -report_every 50 \
-    -save_checkpoint_steps 1000 \
-    -batch_size 3000 \
-    -decay_method noam \
-    -train_steps 50000 \
-    -accum_count 2 \
-    -log_file ../logs/bert_transformer \
-    -use_interval true \
-    -warmup_steps 10000 \
-    -ff_size 2048 \
-    -inter_layers 2 \
-    -heads 8
-```
-
-#### training with different models
-
-To train the BERT+Classifier model, run:
-```
-python train.py -mode train -encoder classifier -dropout 0.1 -bert_data_path ../bert_data/cnndm -model_path ../models/bert_classifier -lr 2e-3 -visible_gpus 0,1,2  -gpu_ranks 0,1,2 -world_size 3 -report_every 50 -save_checkpoint_steps 1000 -batch_size 3000 -decay_method noam -train_steps 50000 -accum_count 2 -log_file ../logs/bert_classifier -use_interval true -warmup_steps 10000
-```
-
-To train the BERT+Transformer model, run:
-```
-python train.py -mode train -encoder transformer -dropout 0.1 -bert_data_path ../bert_data/cnndm -model_path ../models/bert_transformer -lr 2e-3 -visible_gpus 0,1,2  -gpu_ranks 0,1,2 -world_size 3 -report_every 50 -save_checkpoint_steps 1000 -batch_size 3000 -decay_method noam -train_steps 50000 -accum_count 2 -log_file ../logs/bert_transformer -use_interval true -warmup_steps 10000 -ff_size 2048 -inter_layers 2 -heads 8
-```
-
-To train the BERT+RNN model, run:
-```
-python train.py -mode train -encoder rnn -dropout 0.1 -bert_data_path ../bert_data/cnndm -model_path ../models/bert_rnn -lr 2e-3 -visible_gpus 0,1,2  -gpu_ranks 0,1,2 -world_size 3 -report_every 50 -save_checkpoint_steps 1000 -batch_size 3000 -decay_method noam -train_steps 50000 -accum_count 2 -log_file ../logs/bert_rnn -use_interval true -warmup_steps 10000 -rnn_size 768 -dropout 0.1
-```
-
-
-* `-mode` can be {`train, validate, test`}, where `validate` will inspect the model directory and evaluate the model for each newly saved checkpoint, `test` need to be used with `-test_from`, indicating the checkpoint you want to use
-
-## Model Evaluation
-
-1st install pyrrouge: https://stackoverflow.com/a/45894212/installing-pyrouge-gets-error-in-ubuntu:
-```sh
-cd /h/bparker/venv_xlnet/
-git clone https://github.com/bheinzerling/pyrouge
-cd pyrouge
-# ../bin/python3.5 ./setup.py install
-pip install -e .
-cd ../
-git clone https://github.com/andersjo/pyrouge.git rouge
-pyrouge_set_rouge_path /h/bparker/venv_xlnet/rouge/tools/ROUGE-1.5.5/
-```
-
-After the training finished, run
-```
-python train.py -mode validate -bert_data_path ../bert_data/cnndm -model_path MODEL_PATH  -visible_gpus 0  -gpu_ranks 0 -batch_size 30000  -log_file LOG_FILE  -result_path RESULT_PATH -test_all -block_trigram true
-```
-* `MODEL_PATH` is the directory of saved checkpoints
-* `RESULT_PATH` is where you want to put decoded summaries (default `../results/cnndm`)
 
 
 ## FAQ:
