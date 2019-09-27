@@ -25,7 +25,7 @@ Some codes are borrowed from ONMT(https://github.com/OpenNMT/OpenNMT-py)
 
 **First run**: For the first time, you should use single-GPU, so the code can download the BERT model. Change ``-visible_gpus 0,1,2  -gpu_ranks 0,1,2 -world_size 3`` to ``-visible_gpus 0  -gpu_ranks 0 -world_size 1``, after downloading, you could kill the process and rerun the code with multi-GPUs.
 
-examples of different training tasks on different datasets: ./src/train_bert_sum.sh 
+**examples of different training tasks on different datasets: ./src/train_bert_sum.sh **
 
 #### param info
 ```bash
